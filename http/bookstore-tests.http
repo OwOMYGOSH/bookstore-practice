@@ -1,0 +1,37 @@
+@host = http://localhost:8080
+@authorId = 1
+@bookId = 1
+
+### 列出所有作者
+GET {{host}}/authors
+
+
+### 列出想找的作者
+GET {{host}}/authors/{{authorId}}
+
+
+### 建立作者
+POST {{host}}/authors
+Content-Type: application/json
+
+{
+  "name": "王小明",
+  "bio": "台灣作家"
+}
+
+### 故意缺 name 測 @Valid
+POST {{host}}/authors
+Content-Type: application/json
+
+{ "name": "    ", "bio": "test" }
+
+
+### 列出作者所有的書
+GET {{host}}/authors/{{authorId}}/books
+
+
+### 列出所有的書
+GET {{host}}/books
+
+### 列出想找的書
+GET {{host}}/books/{{bookId}}
