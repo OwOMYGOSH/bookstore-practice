@@ -24,4 +24,23 @@ public class BookService {
     public List<Book> getBooksByAuthorId(Long authorId) {
         return bookRepository.findByAuthorIdAndIsActiveTrue(authorId);
     }
+
+    public Book addBook(Book book) {
+        return bookRepository.save(book);
+    }
+
+    public Book updateBook(Long bookId, Book newBook) {
+        Book existBook = getBookById(bookId);
+        existBook.setTitle(newBook.getTitle());
+        existBook.setPrice(newBook.getPrice());
+        existBook.setStock(newBook.getStock());
+        existBook.setAuthor(newBook.getAuthor());
+        return bookRepository.save(existBook);
+    }
+
+    public Book deleteBook(Long bookId) {
+        Book existBook = getBookById(bookId);
+        existBook.setActive(false);
+        return bookRepository.save(existBook);
+    }
 }

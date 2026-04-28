@@ -1,10 +1,8 @@
 package com.example.bookstore.book;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,8 +18,18 @@ public class BookController {
         return bookService.getAllBooks();
     }
 
-    @GetMapping("{id}")
-    public Book getBookById(@PathVariable Long id) {
-        return  bookService.getBookById(id);
+    @GetMapping("{bookId}")
+    public Book getBookById(@PathVariable Long bookId) {
+        return bookService.getBookById(bookId);
+    }
+
+    @PutMapping("{bookId}")
+    public Book updateBook(@PathVariable Long bookId, @Valid @RequestBody Book newbook) {
+        return bookService.updateBook(bookId, newbook);
+    }
+
+    @DeleteMapping("{bookId}")
+    public void deleteBookById(@PathVariable Long bookId) {
+        bookService.deleteBook(bookId);
     }
 }

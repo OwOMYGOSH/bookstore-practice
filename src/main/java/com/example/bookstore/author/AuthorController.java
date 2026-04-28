@@ -30,12 +30,17 @@ public class AuthorController {
 
     @GetMapping("{authorId}/books")
     public List<Book> getBooks(@PathVariable Long authorId) {
-        return  bookService.getBooksByAuthorId(authorId);
+        return bookService.getBooksByAuthorId(authorId);
     }
 
     @PostMapping
     public Author createAuthor(@Valid @RequestBody Author author) {
         return authorService.createAuthor(author);
+    }
+
+    @PutMapping("{authorId}")
+    public Author updateAuthor(@PathVariable Long authorId, @Valid @RequestBody Author author) {
+        return authorService.updateAuthor(authorId, author);
     }
 
 }

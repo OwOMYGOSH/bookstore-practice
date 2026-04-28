@@ -24,4 +24,11 @@ public class AuthorService {
     public Author createAuthor(Author author) {
         return authorRepository.save(author);
     }
+
+    public Author updateAuthor(Long authorId, Author author) {
+        Author existAuthor = getAuthorById(authorId);
+        existAuthor.setName(author.getName());
+        existAuthor.setBio(author.getBio());
+        return authorRepository.save(existAuthor);
+    }
 }
