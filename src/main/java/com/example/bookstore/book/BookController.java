@@ -1,5 +1,6 @@
 package com.example.bookstore.book;
 
+import com.example.bookstore.book.dto.CreateBookRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,11 @@ public class BookController {
     @GetMapping("{bookId}")
     public Book getBookById(@PathVariable Long bookId) {
         return bookService.getBookById(bookId);
+    }
+
+    @PostMapping
+    public Book addBook(@Valid @RequestBody CreateBookRequest request) {
+        return bookService.addBook(request);
     }
 
     @PutMapping("{bookId}")

@@ -1,37 +1,143 @@
 @host = http://localhost:8080
-@authorId = 1
+@authorId = 2
 @bookId = 1
 
-### 列出所有作者
+############################
+### Author CRUD 基本驗證
+############################
+
+### [200] 列出所有作者（一開始空 list）
 GET {{host}}/authors
 
+### [200] 建立作者 1（後面測試會用）
+POST {{host}}/authors
+Content-Type: application/json
 
-### 列出想找的作者
+{ "name": "王小明", "bio": "台灣作家" }
+
+### [200] 建立作者 2
+POST {{host}}/authors
+Content-Type: application/json
+
+{ "name": "Frank Herbert", "bio": "Dune 作者" }
+
+### [200] 列出，應該有兩個
+GET {{host}}/authors
+
+### [200] 查 id=1
 GET {{host}}/authors/{{authorId}}
 
+############################
+### 404 — ResourceNotFoundException
+############################
 
-### 建立作者
+### [404] 找不存在的作者
+### 預期 body：{ "status": 404, "error": "Author 999 not found" }
+GET {{host}}/authors/999
+
+### [404] 找不存在的書
+GET {{host}}/books/999
+
+############################
+### 422 — Validation Failed
+############################
+
+### [422] POST /authors 缺 name
+### 預期 body：{ "status": 422, "error": "Validation Failed", "fieldErrors": { "name": "must not be blank" } }
 POST {{host}}/authors
+Content-Type: application/json
+
+{ "bio": "沒名字" }
+
+### [422] POST /authors name 是純空白
+POST {{host}}/authors
+Content-Type: application/json
+
+{ "name": "   ", "bio": "test" }
+
+############################
+### POST /books — 用 DTO
+############################
+
+### [200] 建立書（合法 authorId=1）
+POST {{host}}/books
 Content-Type: application/json
 
 {
-  "name": "王小明",
-  "bio": "台灣作家"
+  "title": "Java 入門",
+  "isbn": "978-0-13-468599-1",
+  "price": 450.00,
+  "stock": 10,
+  "publishedAt": "2026-01-01",
+  "authorId": 2
 }
 
-### 故意缺 name 測 @Valid
-POST {{host}}/authors
+### [404] authorId 不存在 → 應該丟 ResourceNotFoundException
+POST {{host}}/books
 Content-Type: application/json
 
-{ "name": "    ", "bio": "test" }
+{
+  "title": "鬼書",
+  "isbn": "999-0-0",
+  "price": 100.00,
+  "stock": 5,
+  "authorId": 999
+}
 
+### [422] 缺好幾個欄位 → fieldErrors 應該列出全部
+POST {{host}}/books
+Content-Type: application/json
 
-### 列出作者所有的書
-GET {{host}}/authors/{{authorId}}/books
+{ "title": "" }
 
+### [422] price <= 0
+POST {{host}}/books
+Content-Type: application/json
 
-### 列出所有的書
+{
+  "title": "免費書",
+  "isbn": "000-0-0",
+  "price": 0,
+  "stock": 1,
+  "authorId": 1
+}
+
+### [422] stock 負數
+POST {{host}}/books
+Content-Type: application/json
+
+{
+  "title": "負庫存",
+  "isbn": "111-1-1",
+  "price": 100,
+  "stock": -1,
+  "authorId": 1
+}
+
+############################
+### PUT / DELETE
+############################
+
+### [200] 更新作者
+PUT {{host}}/authors/2
+Content-Type: application/json
+
+{ "name": "王大明", "bio": "改名了" }
+
+### [200] 確認改成功
+GET {{host}}/authors/2
+
+### [200] 軟刪除 book id=1
+DELETE {{host}}/books/1
+
+### [404] 軟刪除後再查 → 應該回 404（getBookById 用 findByIdAndIsActiveTrue）
+GET {{host}}/books/1
+
+### [200] GET /books 應該不再出現 id=1
 GET {{host}}/books
 
-### 列出想找的書
-GET {{host}}/books/{{bookId}}
+### [200] GET /authors/1/books 也不應該出現 id=1
+GET {{host}}/authors/1/books
+
+### [404] 不存在的 author 查書 → 預期回 404 而不是 200
+GET {{host}}/authors/999/books
