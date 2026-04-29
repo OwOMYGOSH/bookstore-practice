@@ -4,6 +4,7 @@ import com.example.bookstore.book.Book;
 import com.example.bookstore.book.BookService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public class AuthorController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public Author createAuthor(@Valid @RequestBody Author author) {
         return authorService.createAuthor(author);
     }

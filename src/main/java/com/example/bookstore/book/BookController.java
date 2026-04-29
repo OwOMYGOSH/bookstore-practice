@@ -3,6 +3,7 @@ package com.example.bookstore.book;
 import com.example.bookstore.book.dto.CreateBookRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class BookController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public Book addBook(@Valid @RequestBody CreateBookRequest request) {
         return bookService.addBook(request);
     }

@@ -52,8 +52,10 @@ public class BookService {
     public Book updateBook(Long bookId, Book newBook) {
         Book existBook = getBookById(bookId);
         existBook.setTitle(newBook.getTitle());
+        existBook.setIsbn(newBook.getIsbn());
         existBook.setPrice(newBook.getPrice());
         existBook.setStock(newBook.getStock());
+        existBook.setPublishedAt(newBook.getPublishedAt());
         existBook.setAuthor(newBook.getAuthor());
         return bookRepository.save(existBook);
     }

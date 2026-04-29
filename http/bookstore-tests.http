@@ -141,3 +141,30 @@ GET {{host}}/authors/1/books
 
 ### [404] 不存在的 author 查書 → 預期回 404 而不是 200
 GET {{host}}/authors/999/books
+
+############################
+### Security 驗收（4 個情境）
+############################
+
+### [200] #1 公開端點：GET /books 不帶 auth 仍然能用
+GET {{host}}/books
+
+### [401] #2 POST /authors 沒帶 auth → Unauthorized
+POST {{host}}/authors
+Content-Type: application/json
+
+{ "name": "未授權" }
+
+### [403] #3 POST /authors 帶 USER → Forbidden（已認證但權限不夠）
+POST {{host}}/authors
+Content-Type: application/json
+Authorization: Basic user user123
+
+{ "name": "USER 越權" }
+
+### [201] #4 POST /authors 帶 ADMIN → Created
+POST {{host}}/authors
+Content-Type: application/json
+Authorization: Basic admin admin123
+
+{ "name": "管理員建立的作者", "bio": "OK" }
