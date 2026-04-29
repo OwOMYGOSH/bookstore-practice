@@ -1,6 +1,6 @@
 package com.example.bookstore.book;
 
-import com.example.bookstore.book.dto.CreateBookRequest;
+import com.example.bookstore.book.dto.BookRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,17 +27,18 @@ public class BookController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Book addBook(@Valid @RequestBody CreateBookRequest request) {
+    public Book addBook(@Valid @RequestBody BookRequest request) {
         return bookService.addBook(request);
     }
 
     @PutMapping("{bookId}")
-    public Book updateBook(@PathVariable Long bookId, @Valid @RequestBody Book newbook) {
-        return bookService.updateBook(bookId, newbook);
+    public Book updateBook(@PathVariable Long bookId, @Valid @RequestBody BookRequest request) {
+        return bookService.updateBook(bookId, request);
     }
 
     @DeleteMapping("{bookId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteBookById(@PathVariable Long bookId) {
-        bookService.deleteBook(bookId);
+         bookService.deleteBook(bookId);
     }
 }

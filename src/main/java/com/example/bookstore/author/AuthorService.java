@@ -1,5 +1,6 @@
 package com.example.bookstore.author;
 
+import com.example.bookstore.author.dto.AuthorRequest;
 import com.example.bookstore.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,14 +22,19 @@ public class AuthorService {
                 .orElseThrow(() -> new ResourceNotFoundException("Author " + authorId + " not found"));
     }
 
-    public Author createAuthor(Author author) {
+    public Author createAuthor(AuthorRequest request) {
+        Author author = new Author();
+
+        author.setName(request.getName());
+        author.setBio(request.getBio());
         return authorRepository.save(author);
     }
 
-    public Author updateAuthor(Long authorId, Author author) {
+    public Author updateAuthor(Long authorId, AuthorRequest request) {
         Author existAuthor = getAuthorById(authorId);
-        existAuthor.setName(author.getName());
-        existAuthor.setBio(author.getBio());
+
+        existAuthor.setName(request.getName());
+        existAuthor.setBio(request.getBio());
         return authorRepository.save(existAuthor);
     }
 }

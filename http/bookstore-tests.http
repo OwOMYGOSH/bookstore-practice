@@ -1,30 +1,34 @@
 @host = http://localhost:8080
 @authorId = 2
 @bookId = 1
+@adminAuth = Basic admin admin123
+@userAuth = Basic user user123
 
 ############################
 ### Author CRUD 基本驗證
 ############################
 
-### [200] 列出所有作者（一開始空 list）
+### [200] 列出所有作者（公開）
 GET {{host}}/authors
 
-### [200] 建立作者 1（後面測試會用）
+### [201] 建立作者 1（admin）
 POST {{host}}/authors
 Content-Type: application/json
+Authorization: {{adminAuth}}
 
 { "name": "王小明", "bio": "台灣作家" }
 
-### [200] 建立作者 2
+### [201] 建立作者 2（admin）
 POST {{host}}/authors
 Content-Type: application/json
+Authorization: {{adminAuth}}
 
 { "name": "Frank Herbert", "bio": "Dune 作者" }
 
 ### [200] 列出，應該有兩個
 GET {{host}}/authors
 
-### [200] 查 id=1
+### [200] 查單一 author
 GET {{host}}/authors/{{authorId}}
 
 ############################
@@ -38,20 +42,25 @@ GET {{host}}/authors/999
 ### [404] 找不存在的書
 GET {{host}}/books/999
 
+### [404] 不存在的 author 查書
+GET {{host}}/authors/999/books
+
 ############################
-### 422 — Validation Failed
+### 422 — Validation Failed（admin 才打得到）
 ############################
 
 ### [422] POST /authors 缺 name
 ### 預期 body：{ "status": 422, "error": "Validation Failed", "fieldErrors": { "name": "must not be blank" } }
 POST {{host}}/authors
 Content-Type: application/json
+Authorization: {{adminAuth}}
 
 { "bio": "沒名字" }
 
 ### [422] POST /authors name 是純空白
 POST {{host}}/authors
 Content-Type: application/json
+Authorization: {{adminAuth}}
 
 { "name": "   ", "bio": "test" }
 
@@ -59,9 +68,10 @@ Content-Type: application/json
 ### POST /books — 用 DTO
 ############################
 
-### [200] 建立書（合法 authorId=1）
+### [201] 建立書（合法 authorId）
 POST {{host}}/books
 Content-Type: application/json
+Authorization: {{adminAuth}}
 
 {
   "title": "Java 入門",
@@ -69,12 +79,13 @@ Content-Type: application/json
   "price": 450.00,
   "stock": 10,
   "publishedAt": "2026-01-01",
-  "authorId": 2
+  "authorId": {{authorId}}
 }
 
-### [404] authorId 不存在 → 應該丟 ResourceNotFoundException
+### [404] authorId 不存在
 POST {{host}}/books
 Content-Type: application/json
+Authorization: {{adminAuth}}
 
 {
   "title": "鬼書",
@@ -87,31 +98,34 @@ Content-Type: application/json
 ### [422] 缺好幾個欄位 → fieldErrors 應該列出全部
 POST {{host}}/books
 Content-Type: application/json
+Authorization: {{adminAuth}}
 
 { "title": "" }
 
 ### [422] price <= 0
 POST {{host}}/books
 Content-Type: application/json
+Authorization: {{adminAuth}}
 
 {
   "title": "免費書",
   "isbn": "000-0-0",
   "price": 0,
   "stock": 1,
-  "authorId": 1
+  "authorId": {{authorId}}
 }
 
 ### [422] stock 負數
 POST {{host}}/books
 Content-Type: application/json
+Authorization: {{adminAuth}}
 
 {
   "title": "負庫存",
   "isbn": "111-1-1",
   "price": 100,
   "stock": -1,
-  "authorId": 1
+  "authorId": {{authorId}}
 }
 
 ############################
@@ -119,52 +133,61 @@ Content-Type: application/json
 ############################
 
 ### [200] 更新作者
-PUT {{host}}/authors/2
+PUT {{host}}/authors/{{authorId}}
 Content-Type: application/json
+Authorization: {{adminAuth}}
 
 { "name": "王大明", "bio": "改名了" }
 
 ### [200] 確認改成功
-GET {{host}}/authors/2
+GET {{host}}/authors/{{authorId}}
 
-### [200] 軟刪除 book id=1
-DELETE {{host}}/books/1
+### [204] 軟刪除 book
+DELETE {{host}}/books/{{bookId}}
+Authorization: {{adminAuth}}
 
-### [404] 軟刪除後再查 → 應該回 404（getBookById 用 findByIdAndIsActiveTrue）
-GET {{host}}/books/1
+### [404] 軟刪除後再查
+GET {{host}}/books/{{bookId}}
 
-### [200] GET /books 應該不再出現 id=1
+### [200] GET /books 應該不再出現該 book
 GET {{host}}/books
 
-### [200] GET /authors/1/books 也不應該出現 id=1
-GET {{host}}/authors/1/books
-
-### [404] 不存在的 author 查書 → 預期回 404 而不是 200
-GET {{host}}/authors/999/books
+### [200] GET /authors/{id}/books 也不應出現
+GET {{host}}/authors/{{authorId}}/books
 
 ############################
-### Security 驗收（4 個情境）
+### Security 驗收（401 / 403）
 ############################
 
-### [200] #1 公開端點：GET /books 不帶 auth 仍然能用
+### [200] #1 公開端點：GET /books 不帶 auth 仍可用
 GET {{host}}/books
 
-### [401] #2 POST /authors 沒帶 auth → Unauthorized
+### [401] #2 POST /authors 沒帶 auth
 POST {{host}}/authors
 Content-Type: application/json
 
 { "name": "未授權" }
 
-### [403] #3 POST /authors 帶 USER → Forbidden（已認證但權限不夠）
+### [403] #3 POST /authors 帶 USER → 已認證但權限不夠
 POST {{host}}/authors
 Content-Type: application/json
-Authorization: Basic user user123
+Authorization: {{userAuth}}
 
 { "name": "USER 越權" }
 
-### [201] #4 POST /authors 帶 ADMIN → Created
+### [201] #4 POST /authors 帶 ADMIN → 成功
 POST {{host}}/authors
 Content-Type: application/json
-Authorization: Basic admin admin123
+Authorization: {{adminAuth}}
 
 { "name": "管理員建立的作者", "bio": "OK" }
+
+### [401] #5 PUT /books 沒帶 auth
+PUT {{host}}/books/{{bookId}}
+Content-Type: application/json
+
+{ "title": "嘗試越權", "isbn": "x", "price": 1, "stock": 1, "authorId": {{authorId}} }
+
+### [403] #6 DELETE /books 帶 USER token
+DELETE {{host}}/books/{{bookId}}
+Authorization: {{userAuth}}

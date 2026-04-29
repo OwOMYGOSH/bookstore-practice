@@ -1,5 +1,6 @@
 package com.example.bookstore.author;
 
+import com.example.bookstore.author.dto.AuthorRequest;
 import com.example.bookstore.book.Book;
 import com.example.bookstore.book.BookService;
 import jakarta.validation.Valid;
@@ -36,13 +37,13 @@ public class AuthorController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Author createAuthor(@Valid @RequestBody Author author) {
-        return authorService.createAuthor(author);
+    public Author createAuthor(@Valid @RequestBody AuthorRequest request) {
+        return authorService.createAuthor(request);
     }
 
     @PutMapping("{authorId}")
-    public Author updateAuthor(@PathVariable Long authorId, @Valid @RequestBody Author author) {
-        return authorService.updateAuthor(authorId, author);
+    public Author updateAuthor(@PathVariable Long authorId, @Valid @RequestBody AuthorRequest request) {
+        return authorService.updateAuthor(authorId, request);
     }
 
 }

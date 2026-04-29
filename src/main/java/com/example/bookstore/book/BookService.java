@@ -2,10 +2,9 @@ package com.example.bookstore.book;
 
 import com.example.bookstore.author.Author;
 import com.example.bookstore.author.AuthorRepository;
-import com.example.bookstore.book.dto.CreateBookRequest;
+import com.example.bookstore.book.dto.BookRequest;
 import com.example.bookstore.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,7 +34,7 @@ public class BookService {
         return bookRepository.findByAuthorIdAndIsActiveTrue(authorId);
     }
 
-    public Book addBook(CreateBookRequest request) {
+    public Book addBook(BookRequest request) {
         Book book = new Book();
         Author author = authorRepository.findById(request.getAuthorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Author " + request.getAuthorId() + " not found"));
@@ -49,14 +48,18 @@ public class BookService {
         return bookRepository.save(book);
     }
 
-    public Book updateBook(Long bookId, Book newBook) {
+    public Book updateBook(Long bookId, BookRequest request) {
         Book existBook = getBookById(bookId);
-        existBook.setTitle(newBook.getTitle());
-        existBook.setIsbn(newBook.getIsbn());
-        existBook.setPrice(newBook.getPrice());
-        existBook.setStock(newBook.getStock());
-        existBook.setPublishedAt(newBook.getPublishedAt());
-        existBook.setAuthor(newBook.getAuthor());
+
+        Author author = authorRepository.findById(request.getAuthorId())
+                .orElseThrow(() -> new ResourceNotFoundException("Author " + request.getAuthorId() + " not found"));
+
+        existBook.setTitle(request.getTitle());
+        existBook.setIsbn(request.getIsbn());
+        existBook.setPrice(request.getPrice());
+        existBook.setStock(request.getStock());
+        existBook.setPublishedAt(request.getPublishedAt());
+        existBook.setAuthor(author);
         return bookRepository.save(existBook);
     }
 
