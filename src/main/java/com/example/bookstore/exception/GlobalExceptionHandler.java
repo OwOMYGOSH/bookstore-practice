@@ -2,6 +2,7 @@ package com.example.bookstore.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -36,6 +37,15 @@ public class GlobalExceptionHandler {
                                 FieldError::getDefaultMessage
                         ));
         errorMap.put("fieldErrors", fieldErrors);
+        return errorMap;
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public Map<String, Object> handleBadCredentials(BadCredentialsException ex) {
+        Map<String, Object> errorMap = new HashMap<>();
+        errorMap.put("status", 401);
+        errorMap.put("error", "Authentication required");
         return errorMap;
     }
 

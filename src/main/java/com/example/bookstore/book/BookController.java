@@ -1,6 +1,7 @@
 package com.example.bookstore.book;
 
 import com.example.bookstore.book.dto.BookRequest;
+import com.example.bookstore.book.dto.BookResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,23 +17,23 @@ public class BookController {
     private BookService bookService;
 
     @GetMapping
-    public List<Book> getBooks() {
+    public List<BookResponse> getBooks() {
         return bookService.getAllBooks();
     }
 
     @GetMapping("{bookId}")
-    public Book getBookById(@PathVariable Long bookId) {
+    public BookResponse getBookById(@PathVariable Long bookId) {
         return bookService.getBookById(bookId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Book addBook(@Valid @RequestBody BookRequest request) {
+    public BookResponse addBook(@Valid @RequestBody BookRequest request) {
         return bookService.addBook(request);
     }
 
     @PutMapping("{bookId}")
-    public Book updateBook(@PathVariable Long bookId, @Valid @RequestBody BookRequest request) {
+    public BookResponse updateBook(@PathVariable Long bookId, @Valid @RequestBody BookRequest request) {
         return bookService.updateBook(bookId, request);
     }
 

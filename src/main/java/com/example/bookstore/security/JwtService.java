@@ -23,7 +23,10 @@ public class JwtService {
 
     @Value("${app.jwt.expiration}")
     private long jwtExpiration;
-    
+
+    public long getExpirationSeconds() {
+        return jwtExpiration / 1000;
+    }
 
     private SecretKey getKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
