@@ -1,17 +1,15 @@
 package com.example.bookstore.exception;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -27,26 +25,34 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-    public Map<String, Object> handleValidation(MethodArgumentNotValidException ex) {
+    public Map<String, Object> handleValidation(
+        MethodArgumentNotValidException ex
+    ) {
         Map<String, Object> errorMap = new HashMap<>();
         errorMap.put("status", 422);
         errorMap.put("error", "Validation Failed");
-        Map<String, String> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
-                        .collect(Collectors.toMap(
-                                FieldError::getField,
-                                FieldError::getDefaultMessage
-                        ));
+        Map<String, String> fieldErrors = ex
+            .getBindingResult()
+            .getFieldErrors()
+            .stream()
+            .collect(
+                Collectors.toMap(
+                    FieldError::getField,
+                    FieldError::getDefaultMessage
+                )
+            );
         errorMap.put("fieldErrors", fieldErrors);
         return errorMap;
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public Map<String, Object> handleBadCredentials(BadCredentialsException ex) {
+    public Map<String, Object> handleBadCredentials(
+        BadCredentialsException ex
+    ) {
         Map<String, Object> errorMap = new HashMap<>();
         errorMap.put("status", 401);
         errorMap.put("error", "Authentication required");
         return errorMap;
     }
-
 }

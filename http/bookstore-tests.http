@@ -1,8 +1,39 @@
 @host = http://localhost:8080
 @authorId = 2
 @bookId = 1
-@adminAuth = Basic admin admin123
-@userAuth = Basic user user123
+
+############################
+### 0. 登入拿 JWT（先跑這兩支，後面才會有 token）
+############################
+
+### [200] 登入 admin
+# @name loginAdmin
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "username": "admin", "password": "admin123" }
+
+###
+
+@adminToken = {{loginAdmin.response.body.token}}
+
+### [200] 登入 user
+# @name loginUser
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "username": "user", "password": "user123" }
+
+###
+
+@userToken = {{loginUser.response.body.token}}
+
+### [401] 密碼錯誤
+### 預期 body：{ "status": 401, "error": "Authentication required" }
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "username": "admin", "password": "wrong" }
 
 ############################
 ### Author CRUD 基本驗證
@@ -14,14 +45,14 @@ GET {{host}}/authors
 ### [201] 建立作者 1（admin）
 POST {{host}}/authors
 Content-Type: application/json
-Authorization: {{adminAuth}}
+Authorization: Bearer {{adminToken}}
 
 { "name": "王小明", "bio": "台灣作家" }
 
 ### [201] 建立作者 2（admin）
 POST {{host}}/authors
 Content-Type: application/json
-Authorization: {{adminAuth}}
+Authorization: Bearer {{adminToken}}
 
 { "name": "Frank Herbert", "bio": "Dune 作者" }
 
@@ -50,17 +81,17 @@ GET {{host}}/authors/999/books
 ############################
 
 ### [422] POST /authors 缺 name
-### 預期 body：{ "status": 422, "error": "Validation Failed", "fieldErrors": { "name": "must not be blank" } }
+### 預期 body：{ "status": 422, "error": "Validation Failed", "fieldErrors": { "name": "..." } }
 POST {{host}}/authors
 Content-Type: application/json
-Authorization: {{adminAuth}}
+Authorization: Bearer {{adminToken}}
 
 { "bio": "沒名字" }
 
 ### [422] POST /authors name 是純空白
 POST {{host}}/authors
 Content-Type: application/json
-Authorization: {{adminAuth}}
+Authorization: Bearer {{adminToken}}
 
 { "name": "   ", "bio": "test" }
 
@@ -71,7 +102,7 @@ Authorization: {{adminAuth}}
 ### [201] 建立書（合法 authorId）
 POST {{host}}/books
 Content-Type: application/json
-Authorization: {{adminAuth}}
+Authorization: Bearer {{adminToken}}
 
 {
   "title": "Java 入門",
@@ -85,7 +116,7 @@ Authorization: {{adminAuth}}
 ### [404] authorId 不存在
 POST {{host}}/books
 Content-Type: application/json
-Authorization: {{adminAuth}}
+Authorization: Bearer {{adminToken}}
 
 {
   "title": "鬼書",
@@ -98,14 +129,14 @@ Authorization: {{adminAuth}}
 ### [422] 缺好幾個欄位 → fieldErrors 應該列出全部
 POST {{host}}/books
 Content-Type: application/json
-Authorization: {{adminAuth}}
+Authorization: Bearer {{adminToken}}
 
 { "title": "" }
 
 ### [422] price <= 0
 POST {{host}}/books
 Content-Type: application/json
-Authorization: {{adminAuth}}
+Authorization: Bearer {{adminToken}}
 
 {
   "title": "免費書",
@@ -118,7 +149,7 @@ Authorization: {{adminAuth}}
 ### [422] stock 負數
 POST {{host}}/books
 Content-Type: application/json
-Authorization: {{adminAuth}}
+Authorization: Bearer {{adminToken}}
 
 {
   "title": "負庫存",
@@ -135,7 +166,7 @@ Authorization: {{adminAuth}}
 ### [200] 更新作者
 PUT {{host}}/authors/{{authorId}}
 Content-Type: application/json
-Authorization: {{adminAuth}}
+Authorization: Bearer {{adminToken}}
 
 { "name": "王大明", "bio": "改名了" }
 
@@ -144,7 +175,7 @@ GET {{host}}/authors/{{authorId}}
 
 ### [204] 軟刪除 book
 DELETE {{host}}/books/{{bookId}}
-Authorization: {{adminAuth}}
+Authorization: Bearer {{adminToken}}
 
 ### [404] 軟刪除後再查
 GET {{host}}/books/{{bookId}}
@@ -163,22 +194,31 @@ GET {{host}}/authors/{{authorId}}/books
 GET {{host}}/books
 
 ### [401] #2 POST /authors 沒帶 auth
+### 預期 body：{ "status": 401, "error": "Authentication required" }
 POST {{host}}/authors
 Content-Type: application/json
 
 { "name": "未授權" }
 
-### [403] #3 POST /authors 帶 USER → 已認證但權限不夠
+### [401] #2b POST /authors 帶亂打的 token
 POST {{host}}/authors
 Content-Type: application/json
-Authorization: {{userAuth}}
+Authorization: Bearer not-a-real-token
+
+{ "name": "假 token" }
+
+### [403] #3 POST /authors 帶 USER → 已認證但權限不夠
+### 預期 body：{ "status": 403, "error": "..." }
+POST {{host}}/authors
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
 
 { "name": "USER 越權" }
 
 ### [201] #4 POST /authors 帶 ADMIN → 成功
 POST {{host}}/authors
 Content-Type: application/json
-Authorization: {{adminAuth}}
+Authorization: Bearer {{adminToken}}
 
 { "name": "管理員建立的作者", "bio": "OK" }
 
@@ -190,4 +230,4 @@ Content-Type: application/json
 
 ### [403] #6 DELETE /books 帶 USER token
 DELETE {{host}}/books/{{bookId}}
-Authorization: {{userAuth}}
+Authorization: Bearer {{userToken}}

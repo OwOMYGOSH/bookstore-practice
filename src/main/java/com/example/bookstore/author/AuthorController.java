@@ -2,15 +2,13 @@ package com.example.bookstore.author;
 
 import com.example.bookstore.author.dto.AuthorRequest;
 import com.example.bookstore.author.dto.AuthorResponse;
-import com.example.bookstore.book.Book;
 import com.example.bookstore.book.BookService;
 import com.example.bookstore.book.dto.BookResponse;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/authors")
@@ -39,13 +37,17 @@ public class AuthorController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public AuthorResponse createAuthor(@Valid @RequestBody AuthorRequest request) {
+    public AuthorResponse createAuthor(
+        @Valid @RequestBody AuthorRequest request
+    ) {
         return authorService.createAuthor(request);
     }
 
     @PutMapping("{authorId}")
-    public AuthorResponse updateAuthor(@PathVariable Long authorId, @Valid @RequestBody AuthorRequest request) {
+    public AuthorResponse updateAuthor(
+        @PathVariable Long authorId,
+        @Valid @RequestBody AuthorRequest request
+    ) {
         return authorService.updateAuthor(authorId, request);
     }
-
 }
