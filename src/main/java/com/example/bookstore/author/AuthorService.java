@@ -4,6 +4,8 @@ import com.example.bookstore.author.dto.AuthorRequest;
 import com.example.bookstore.author.dto.AuthorResponse;
 import com.example.bookstore.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +22,7 @@ public class AuthorService {
                 .toList();
     }
 
+    @Cacheable(value = "author", key = "#authorId")
     public AuthorResponse getAuthorById(Long authorId) {
         return toResponse(findAuthorOrThrow(authorId));
     }
@@ -32,6 +35,7 @@ public class AuthorService {
         return toResponse(author);
     }
 
+    @CacheEvict(value = "author", key = "#authorId")
     public AuthorResponse updateAuthor(Long authorId, AuthorRequest request) {
         Author existAuthor = findAuthorOrThrow(authorId);
 
