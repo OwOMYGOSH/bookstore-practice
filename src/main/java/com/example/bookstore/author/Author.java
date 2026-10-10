@@ -22,6 +22,9 @@ public class Author {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
+    @Version
+    private Long version;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -53,6 +56,10 @@ public class Author {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public Long getVersion() {
+        return version;
     }
 
     @Override

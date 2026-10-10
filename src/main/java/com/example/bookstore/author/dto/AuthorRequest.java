@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public record AuthorRequest(
         @NotBlank String name,
-        String bio
+        String bio,
+        Long version
 ) {
 }

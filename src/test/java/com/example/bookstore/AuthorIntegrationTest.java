@@ -75,7 +75,7 @@ class AuthorIntegrationTest {
     @Test
     void createAuthor_thenGet_dataMatches() {
         HttpHeaders h = bearerAuth(adminToken());
-        var req = new AuthorRequest("J.K. Rowling", "British author");
+        var req = new AuthorRequest("J.K. Rowling", "British author", null);
 
         // POST 用 exchange
         ResponseEntity<AuthorResponse> created =
@@ -157,7 +157,7 @@ class AuthorIntegrationTest {
         HttpHeaders h = new HttpHeaders();
         h.setContentType(MediaType.APPLICATION_JSON);
 
-        var req = new AuthorRequest("Anyone", null);
+        var req = new AuthorRequest("Anyone", null, null);
 
         ResponseEntity<Map> resp =
                 rest.exchange("/authors", HttpMethod.POST, new HttpEntity<>(req, h), Map.class);
@@ -168,7 +168,7 @@ class AuthorIntegrationTest {
     @Test
     void postAuthor_withUserRole_returns403() {
         HttpHeaders h = bearerAuth(userToken());
-        var req = new AuthorRequest("Anyone", null);
+        var req = new AuthorRequest("Anyone", null, null);
 
         ResponseEntity<Map> resp =
                 rest.exchange("/authors", HttpMethod.POST, new HttpEntity<>(req, h), Map.class);
@@ -217,7 +217,7 @@ class AuthorIntegrationTest {
         // Bonus：以下是完整的端到端驗證
         HttpHeaders h = bearerAuth(loginBody.token());
         ResponseEntity<AuthorResponse> probe =
-                rest.exchange("/authors", HttpMethod.POST, new HttpEntity<>(new AuthorRequest("X", null), h), AuthorResponse.class);
+                rest.exchange("/authors", HttpMethod.POST, new HttpEntity<>(new AuthorRequest("X", null, null), h), AuthorResponse.class);
         assertThat(probe.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     }
 

@@ -2,11 +2,13 @@ package com.example.bookstore.author;
 
 import com.example.bookstore.author.dto.AuthorRequest;
 import com.example.bookstore.author.dto.AuthorResponse;
+import com.example.bookstore.exception.OptimisticLockConflictException;
 import com.example.bookstore.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -36,11 +38,18 @@ public class AuthorService {
     }
 
     @CacheEvict(value = "author", key = "#authorId")
+    @Transactional
     public AuthorResponse updateAuthor(Long authorId, AuthorRequest request) {
         Author existAuthor = findAuthorOrThrow(authorId);
 
+        if (request.version() != null && !request.version().equals(existAuthor.getVersion())) {
+            throw new OptimisticLockConflictException(
+                    "Author " + authorId + " was modified by another request");
+        }
+
         applyToAuthor(existAuthor, request);
-        authorRepository.save(existAuthor);
+        // flush 才會 version+1，不 flush 的話 response 會回舊 version
+        authorRepository.saveAndFlush(existAuthor);
         return toResponse(existAuthor);
     }
 
@@ -59,7 +68,8 @@ public class AuthorService {
                 author.getId(),
                 author.getName(),
                 author.getBio(),
-                author.getCreatedAt()
+                author.getCreatedAt(),
+                author.getVersion()
         );
     }
 }

@@ -231,3 +231,25 @@ Content-Type: application/json
 ### [403] #6 DELETE /books 帶 USER token
 DELETE {{host}}/books/{{bookId}}
 Authorization: Bearer {{userToken}}
+
+############################
+### 樂觀鎖 — 409 Conflict（Author 2；從 version=0 起跑，重跑前先 GET 確認 version，已是 1 的話第二段也會 409）
+############################
+
+### [200] 讀一次，記下 version（全新資料應為 0）
+GET {{host}}/authors/2
+
+### [200] 用 version=0 更新 → 預期 200，response 的 version 變 1
+PUT {{host}}/authors/2
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{ "name": "改第一次", "bio": "...", "version": 0 }
+
+### [409] 再用 version=0 更新 → 預期 409
+### 預期 body：{ "status": 409, "error": "Author 2 was modified by another request" }
+PUT {{host}}/authors/2
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{ "name": "改第二次", "bio": "...", "version": 0 }

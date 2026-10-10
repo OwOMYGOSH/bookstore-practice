@@ -7,6 +7,7 @@ public record AuthorResponse(
         Long id,
         String name,
         String bio,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        Long version
 ) {
 }

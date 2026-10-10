@@ -23,6 +23,17 @@ public class GlobalExceptionHandler {
         return errorMap;
     }
 
+    @ExceptionHandler(OptimisticLockConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, Object> handleOptimisticLockConflict(
+        OptimisticLockConflictException ex
+    ) {
+        Map<String, Object> errorMap = new HashMap<>();
+        errorMap.put("status", 409);
+        errorMap.put("error", ex.getMessage());
+        return errorMap;
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     public Map<String, Object> handleValidation(
